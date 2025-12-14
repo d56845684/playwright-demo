@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{{ title or "Reserve Demo" }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <header class="header">
+        <div class="container header-inner">
+            <div class="brand">
+                <div class="logo">EC</div>
+                <div>
+                    <div class="brand-title">查訂空位 Demo</div>
+                    <div class="brand-sub">Login required · Card results · CSV download</div>
+                </div>
+            </div>
+            <div class="header-right">
+                {% if user %}
+                <span class="chip">User: {{ user }}</span>
+                <a class="btn btn-ghost" href="/logout">Logout</a>
+                {% else %}
+                <a class="btn btn-ghost" href="/login">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <main class="container main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-inner">
+            <span>Demo only. Replace data/services with real integration when authorized.</span>
+        </div>
+    </footer>
+</body>
+
+</html>

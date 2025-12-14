@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% set title = "Login" %}
+
+{% block content %}
+<div class="auth-wrap">
+    <div class="card auth-card">
+        <h1 class="h1">Sign in</h1>
+        <p class="muted">Use demo account to proceed: <b>demo / demo123</b></p>
+
+        <form method="post" class="form">
+            <label class="label">Username</label>
+            <input class="input" name="username" autocomplete="username" placeholder="demo">
+
+            <label class="label">Password</label>
+            <input class="input" name="password" type="password" autocomplete="current-password" placeholder="demo123">
+
+            {% if error %}
+            <div class="alert">{{ error }}</div>
+            {% endif %}
+
+            <button class="btn btn-primary" type="submit">Sign in</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

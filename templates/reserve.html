@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% set title = "Reserve" %}
+
+{% block content %}
+<section class="panel">
+    <div class="panel-head">
+        <div>
+            <h1 class="h1">查訂空位</h1>
+            <p class="muted">條件：縣市 / 行政區 / 入住日 / 晚數 / 帳數</p>
+        </div>
+    </div>
+
+    <form method="get" action="/reserve" class="filters">
+        <div class="field">
+            <label class="label">縣市</label>
+            <select class="select" name="county">
+                {% for c in counties %}
+                <option value="{{c}}" {% if c==q.county %}selected{% endif %}>{{c}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field">
+            <label class="label">行政區</label>
+            <select class="select" name="district">
+                <option value="">(不限)</option>
+                {% for d in districts %}
+                <option value="{{d}}" {% if d==q.district %}selected{% endif %}>{{d}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field">
+            <label class="label">入住日期</label>
+            <input class="input" type="date" name="checkin" value="{{q.checkin}}">
+        </div>
+
+        <div class="field">
+            <label class="label">露營天數</label>
+            <select class="select" name="nights">
+                {% for n in [1,2,3,4,5] %}
+                <option value="{{n}}" {% if n==q.nights %}selected{% endif %}>{{n+1}} 天 {{n}} 夜</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field">
+            <label class="label">入住帳數</label>
+            <input class="input" type="number" name="tents" min="1" max="10" value="{{q.tents}}">
+        </div>
+
+        <div class="field actions">
+            <button class="btn btn-primary" type="submit">立即搜尋</button>
+            {% if results is not none and results|length > 0 %}
+            <a class="btn btn-ghost"
+                href="/download?county={{q.county}}&district={{q.district}}&checkin={{q.checkin}}&nights={{q.nights}}&tents={{q.tents}}">
+                下載 CSV
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</section>
+
+{% if results is none %}
+<div class="empty">
+    <div class="empty-icon">🔎</div>
+    <div class="empty-title">請先設定條件並搜尋</div>
+    <div class="muted">此頁面需登入；搜尋後會顯示卡片式營區列表。</div>
+</div>
+{% elif results|length == 0 %}
+<div class="empty">
+    <div class="empty-icon">0</div>
+    <div class="empty-title">查無符合資料</div>
+    <div class="muted">請調整縣市、日期、晚數或帳數後再試一次。</div>
+</div>
+{% else %}
+<div class="summary">
+    <span class="chip">符合營區：{{results|length}} 筆</span>
+    <span class="chip">條件：{{q.county}} {{q.district or '(不限)'}} · {{q.checkin}} · {{q.nights}}夜 · {{q.tents}}帳</span>
+</div>
+
+<section class="grid">
+    {% for r in results %}
+    <article class="camp-card">
+        <div class="camp-top">
+            <div>
+                <div class="camp-name">{{ r.camp_name }}</div>
+                <div class="muted small">{{ r.county }} {{ r.district }} · 海拔 {{ r.altitude_m }}m</div>
+                <div class="tags">
+                    {% for t in r.tags %}
+                    <span class="tag">{{ t }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="price">
+                <div class="muted small">起價/每晚</div>
+                <div class="price-main">NT$ {{ r.price_from_per_night }}</div>
+                <div class="muted small">本次總價起</div>
+                <div class="price-sub">NT$ {{ r.price_from_total }}</div>
+            </div>
+        </div>
+
+        <div class="kpis">
+            <div class="kpi">
+                <div class="muted small">可訂剩餘（合計）</div>
+                <div class="kpi-val">{{ r.units_left_total }} 位</div>
+            </div>
+            <div class="kpi">
+                <div class="muted small">可訂日期提示</div>
+                <div class="kpi-val">
+                    {% if r.available_date_hints|length > 0 %}
+                    {{ r.available_date_hints|join(" / ") }}
+                    {% else %}
+                    —
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-title">符合條件的營位型態</div>
+        <div class="sites">
+            {% for s in r.available_sites %}
+            <div class="site-row">
+                <div class="site-left">
+                    <div class="site-type">{{ s.site_type }}</div>
+                    <div class="muted small">可訂 {{ s.available_units }} 位 · 容量估 {{ s.available_tents_capacity }} 帳</div>
+                </div>
+                <div class="site-right">
+                    <div class="site-price">NT$ {{ s.price_per_night }} /晚</div>
+                    <div class="muted small">{{ q.nights }} 夜約 NT$ {{ s.price_total }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </article>
+    {% endfor %}
+</section>
+{% endif %}
+{% endblock %}
